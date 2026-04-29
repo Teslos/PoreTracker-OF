@@ -1,0 +1,45 @@
+# OpenFOAM runtime files
+processor*/
+postProcessing/
+*.foam
+*.OpenFOAM
+log.*
+logs/
+
+# Results and large data
+results/
+*.vtk
+*.vtu
+*.vtp
+*.stl
+*.obj
+*.ply
+
+# Time directories (keep 0/ for initial conditions)
+[1-9]*/
+[1-9][0-9]*/
+0.[0-9]*/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
