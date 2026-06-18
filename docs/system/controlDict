@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     |                                                 |
+|   \\  /    A nd           | Sample controlDict for PoreTracker-OF            |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     yourSolverName;   // e.g. interFoam / compressibleInterFoam
+
+startFrom       latestTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         0.010;
+
+deltaT          1e-6;
+
+writeControl    timeStep;
+writeInterval   100;
+
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  8;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable yes;
+
+functions
+{
+    poreTracker1
+    {
+        type            PoreTracker;
+        libs            ("libPoreTracker.so");
+
+        // Input field names (change if your case uses different names)
+        alphaName       alpha.gas;
+        TName           T;
+        fLorentzName    fLorentz;
+
+        // Thresholds
+        alphaThreshold  0.5;
+        solidusTemp     1700;
+
+        // Tracking
+        searchRadius    5e-4;
+        overlapThreshold 0.3;
+
+        // Physics
+        exclusionScale  0.75;
+
+        // Laser parameters passed to scripts/PoreStats.py
+        vLaser          (0.8 0 0);
+        laserOrigin     (0 0 0);
+
+        // Python post-processing at run end
+        runPythonAtEnd  true;
+        pythonScript    "scripts/PoreStats.py";
+    }
+}
+

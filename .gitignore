@@ -1,3 +1,8 @@
+# OpenFOAM compiled objects and build artifacts
+Make/*/
+src/*/Make/*/
+src/*/lnInclude/
+
 # OpenFOAM runtime files
 processor*/
 postProcessing/
