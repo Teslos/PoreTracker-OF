@@ -25,6 +25,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.colors as mpl_colors
 from scipy import stats as scipy_stats
 
 
@@ -325,18 +326,30 @@ def plot_msd(msd_df: pd.DataFrame, out_path: Path):
 def plot_trajectories(df: pd.DataFrame, out_path: Path):
     """2-D X-Z trajectories in laser frame (keyhole excluded)."""
     fig, ax = plt.subplots(figsize=(8, 5))
-    sc = None
-    for pid, grp in df.groupby("PoreID"):
-        if grp["IsKeyhole"].iloc[0] == 1:
-            continue
+
+    # One shared colour scale across every pore.  Calling scatter per pore
+    # lets matplotlib normalise each call independently, so a pore that lived
+    # 10 us would span the same colour range as one that lived 900 us, and the
+    # colorbar - built from whichever scatter happened to be last - would
+    # describe only that pore.  A single pore ending the loop is enough to
+    # label the whole figure with a range the data never takes.
+    gas = df[df["IsKeyhole"] == 0]
+    if gas.empty:
+        plt.close(fig)
+        return
+    norm = mpl_colors.Normalize(vmin=gas["Time"].min() * 1e3,
+                                vmax=gas["Time"].max() * 1e3)
+
+    for pid, grp in gas.groupby("PoreID"):
         grp = grp.sort_values("Time")
-        sc = ax.scatter(grp["Xrel"] * 1e6, grp["Zrel"] * 1e6,
-                        c=grp["Time"] * 1e3, cmap="viridis", s=10)
+        ax.scatter(grp["Xrel"] * 1e6, grp["Zrel"] * 1e6,
+                   c=grp["Time"] * 1e3, cmap="viridis", norm=norm, s=10)
     ax.set_xlabel("X (laser frame, µm)")
     ax.set_ylabel("Z (laser frame, µm)")
     ax.set_title("Pore Trajectories — Laser Frame (colour = time, ms)")
-    if sc is not None:
-        fig.colorbar(sc, ax=ax).set_label("Time (ms)")
+    sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+    sm.set_array([])
+    fig.colorbar(sm, ax=ax).set_label("Time (ms)")
     fig.tight_layout()
     fig.savefig(str(out_path), dpi=150)
     plt.close(fig)
